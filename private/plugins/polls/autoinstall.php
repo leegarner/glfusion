@@ -49,28 +49,71 @@ require_once $_CONF['path'].'plugins/polls/sql/mysql_install.php';
 // +--------------------------------------------------------------------------+
 
 $INSTALL_plugin['polls'] = array(
-  'installer' => array('type' => 'installer', 'version' => '1', 'mode' => 'install'),
-
-  'plugin' => array('type' => 'plugin', 'name' => $_PO_CONF['pi_name'],
-        'ver' => $_PO_CONF['pi_version'], 'gl_ver' => $_PO_CONF['gl_version'],
-        'url' => $_PO_CONF['pi_url'], 'display' => $_PO_CONF['pi_display_name']),
-
-  array('type' => 'table', 'table' => $_TABLES['pollanswers'], 'sql' => $_SQL['pollanswers']),
-
-  array('type' => 'table', 'table' => $_TABLES['pollquestions'], 'sql' => $_SQL['pollquestions']),
-
-  array('type' => 'table', 'table' => $_TABLES['polltopics'], 'sql' => $_SQL['polltopics']),
-  array('type' => 'table', 'table' => $_TABLES['pollvoters'], 'sql' => $_SQL['pollvoters']),
-
-  array('type' => 'group', 'group' => 'polls Admin', 'desc' => 'Users in this group can administer the Polls plugin',
-        'variable' => 'admin_group_id', 'addroot' => true, 'admin' => true),
-
-  array('type' => 'feature', 'feature' => 'polls.edit', 'desc' => 'Ability to edit Polls',
-        'variable' => 'edit_feature_id'),
-
-  array('type' => 'mapping', 'group' => 'admin_group_id', 'feature' => 'edit_feature_id',
-        'log' => 'Adding feature to the admin group'),
-
+    'installer' => array(
+        'type' => 'installer',
+        'version' => '1',
+        'mode' => 'install',
+    ),
+    'plugin' => array(
+        'type' => 'plugin',
+        'name' => $_PO_CONF['pi_name'],
+        'ver' => $_PO_CONF['pi_version'],
+        'gl_ver' => $_PO_CONF['gl_version'],
+        'url' => $_PO_CONF['pi_url'],
+        'display' => $_PO_CONF['pi_display_name'],
+    ),
+    array(
+        'type' => 'table',
+        'table' => $_TABLES['pollanswers'],
+        'sql' => $_SQL['pollanswers'],
+    ),
+    array(
+        'type' => 'table',
+        'table' => $_TABLES['pollquestions'],
+        'sql' => $_SQL['pollquestions'],
+    ),
+    array(
+        'type' => 'table',
+        'table' => $_TABLES['polltopics'],
+        'sql' => $_SQL['polltopics'],
+    ),
+    array(
+        'type' => 'table',
+        'table' => $_TABLES['pollvoters'],
+        'sql' => $_SQL['pollvoters'],
+    ),
+    array(
+        'type' => 'group',
+        'group' => 'polls Admin',
+        'desc' => 'Users in this group can administer the Polls plugin',
+        'variable' => 'admin_group_id',
+        'addroot' => true,
+        'admin' => true,
+    ),
+    array(
+        'type' => 'feature',
+        'feature' => 'polls.admin',
+        'desc' => 'Full admin access to Polls',
+        'variable' => 'admin_feature_id',
+    ),
+    array(
+        'type' => 'feature',
+        'feature' => 'polls.edit',
+        'desc' => 'Ability to edit Polls',
+        'variable' => 'edit_feature_id',
+    ),
+    array(
+        'type' => 'mapping',
+        'group' => 'admin_group_id',
+        'feature' => 'edit_feature_id',
+        'log' => 'Adding feature to the admin group',
+    ),
+    array(
+        'type' => 'mapping',
+        'group' => 1,
+        'feature' => 'admin_feature_id',
+        'log' => 'Adding feature to the admin group',
+    ),
 );
 
 

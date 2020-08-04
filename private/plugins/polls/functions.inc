@@ -309,7 +309,7 @@ function plugin_dopluginsearch_polls($query, $dateStart, $dateEnd, $topic, $type
         . " WHERE (p.date <= '".$_CONF['_now']->toMySQL(true)."') "
         . COM_getPermSQL('AND', 0, 2, 'p');
 
-    if (!SEC_inGroup('Root', $uid)) {
+    if (!SEC_hasRights('polls.admin', $uid)) {
         $sql .= " AND ((p.hideresults = 0) OR (p.owner_id = {$uid})) ";
     }
 
