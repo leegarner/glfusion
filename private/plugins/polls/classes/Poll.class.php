@@ -1248,16 +1248,14 @@ class Poll
         );
         $query_arr = array(
             'table' => 'polltopics',
-            'sql' => "SELECT p.*, UNIX_TIMESTAMP(p.date) AS unixdate, count(v.id) as vote_count
-                FROM {$_TABLES['polltopics']} p
-                LEFT JOIN {$_TABLES['pollvoters']} v
-                ON v.pid = p.pid",
+            'sql' => "SELECT p.*, UNIX_TIMESTAMP(p.date) AS unixdate,
+                (SELECT COUNT(v.id) FROM {$_TABLES['pollvoters']} v WHERE v.pid = p.pid) AS vote_count
+                FROM {$_TABLES['polltopics']} p",
             'query_fields' => array('topic'),
             'default_filter' => COM_getPermSQL(),
             'query' => '',
             'query_limit' => 0,
         );
-
         $extras = array(
             'token' => 'dummy',
         );
