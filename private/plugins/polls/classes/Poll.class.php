@@ -911,8 +911,7 @@ class Poll
         if (
             $displaytype == 0 &&    // not in a block or autotag
             (
-                isset($_COOKIE[$this->pid]) ||
-                $this->ipAlreadyVoted() ||
+                $this->alreadyVoted() ||
                 !$this->is_open
             )
         ) {
@@ -1133,13 +1132,26 @@ class Poll
 
     /**
      * Check if the user has already voted.
-     * Checks the IP address and the poll cookie.
+     * For anonymous, checks the IP address and the poll cookie.
      *
      * @return  boolean     True if the user has voted, False if not
      */
     public function alreadyVoted()
     {
-        if (
+        global $_USER, $_TABLES;
+
+        if (!COM_isAnonUser()) {
+            $pid = DB_escapeString($this->pid);
+            if (DB_count(
+                $_TABLES['pollvoters'],
+                 array('uid', 'pid'),
+                 array((int)$_USER['uid'], $pid) ) > 0
+            ) {
+                $retval = true;
+            } else {
+                $retval = false;
+            }
+        } elseif (
             isset($_COOKIE['poll-' . $this->pid])
             ||
             $this->ipAlreadyVoted()
@@ -1153,33 +1165,25 @@ class Poll
 
     /**
      * Check if we already have a vote from this IP address.
-     * Also checks by user if not anonymous.
      *
      * @return   boolean         true: IP already voted; false: didn't
      */
     public function ipAlreadyVoted()
     {
-        global $_USER, $_TABLES;
+        global $_TABLES;
 
         $retval = false;
 
         $ip = $_SERVER['REAL_ADDR'];
         $pid = DB_escapeString($this->pid);
 
-        if ( !COM_isAnonUser() ) {
-            if (DB_count(
+        if (
+            $ip != '' &&
+            DB_count(
                 $_TABLES['pollvoters'],
-                 array('uid', 'pid'),
-                 array((int)$_USER['uid'], $pid) ) > 0
-            ) {
-                $retval = true;
-            } else {
-                $retval = false;
-            }
-        } elseif ($ip != '' && DB_count(
-            $_TABLES['pollvoters'],
-            array('ipaddress', 'pid'),
-            array(DB_escapeString($ip), $pid) ) > 0
+                array('ipaddress', 'pid'),
+                array(DB_escapeString($ip), $pid)
+            ) > 0
         ) {
             $retval = true;
         }
