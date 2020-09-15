@@ -1089,7 +1089,7 @@ class Poll
 
         $retval = '';
 
-        if ($this->ipAlreadyVoted()) {
+        if ($this->alreadyVoted()) {
             COM_setMsg($LANG_POLLS['alreadyvoted']);
             return false;
         }
@@ -1156,10 +1156,11 @@ class Poll
             ||
             $this->ipAlreadyVoted()
         ) {
-            return false;
+            $retval = false;
         } else {
-            return true;
+            $retval = true;
         }
+        return $retval;
     }
 
 
