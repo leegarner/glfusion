@@ -1152,7 +1152,8 @@ class Poll
 
 
     /**
-     * Check if we already have a vote from this IP address
+     * Check if we already have a vote from this IP address.
+     * Also checks by user if not anonymous.
      *
      * @return   boolean         true: IP already voted; false: didn't
      */
