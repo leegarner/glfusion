@@ -805,6 +805,23 @@ class Question
         return $this;
     }
 
+
+    /**
+     * Change the Poll ID for all items if it was saved with a new ID.
+     *
+     * @param   string  $old_pid    Original Poll ID
+     * @param   string  $new_pid    New Poll ID
+     */
+    public static function changePid($old_pid, $new_pid)
+    {
+        global $_TABLES;
+
+        DB_query("UPDATE {$_TABLES['pollanswers']}
+            SET pid = '" . DB_escapeString($new_pid) . "'
+            WHERE pid = '" . DB_escapeString($old_pid) . "'"
+        );
+    }
+
 }
 
 ?>

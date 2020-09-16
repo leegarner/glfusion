@@ -91,6 +91,9 @@ class Voter
         } else {
             $userid = (int)$_USER['uid'];
         }
+
+        Poll::getInstance($pid)->updateVoters(1);
+
         // This always does an insert so no need to provide key_field and key_value args
         $sql = "INSERT IGNORE INTO {$_TABLES['pollvoters']} SET
             ipaddress = '" . DB_escapeString(Voter::getIpAddress()) . "',
@@ -98,6 +101,23 @@ class Voter
             date = UNIX_TIMESTAMP(),
             pid = '" . DB_escapeString($pid) . "'";
         return DB_query($sql);
+    }
+
+
+    /**
+     * Change the Poll ID for all items if it was saved with a new ID.
+     *
+     * @param   string  $old_pid    Original Poll ID
+     * @param   string  $new_pid    New Poll ID
+     */
+    public static function changePid($old_pid, $new_pid)
+    {
+        global $_TABLES;
+
+        DB_query("UPDATE {$_TABLES['pollvoters']}
+            SET pid = '" . DB_escapeString($new_pid) . "'
+            WHERE pid = '" . DB_escapeString($old_pid) . "'"
+        );
     }
 
 }

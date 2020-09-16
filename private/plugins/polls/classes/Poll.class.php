@@ -643,12 +643,9 @@ class Poll
 
             // Now, if the ID was changed, update the question and answer tables
             if (!$this->isNew && $changingID) {
-                DB_query("UPDATE {$_TABLES['pollanswers']}
-                        SET pid = '{$this->pid}'
-                        WHERE pid = '{$this->old_pid}'");
-                DB_query("UPDATE {$_TABLES['pollquestions']}
-                        SET pid = '{$this->pid}'
-                        WHERE pid = '{$this->old_pid}'");
+                Answer::changePid($this->old_pid, $this->pid);
+                Question::changePid($this->old_pid, $this->pid);
+                Voter::changePid($this->old_pid, $this->pid);
             }
             CTL_clearCache();       // so autotags pick up changes
             $msg = '';              // no error message if successful
@@ -685,11 +682,11 @@ class Poll
      */
     public static function adminList()
     {
-        global $_CONF, $_TABLES, $_IMAGE_TYPE, $LANG_ADMIN, $LANG25, $LANG_ACCESS;
+        global $_CONF, $_TABLES, $_IMAGE_TYPE, $LANG_ADMIN, $LANG25, $LANG_ACCESS, $LANG_POLLS;
 
         $retval = '';
 
-        $menu_arr = array (
+        /*$menu_arr = array (
             array(
                 'url' => $_CONF['site_admin_url'] . '/plugins/polls/index.php',
                 'text' => $LANG_ADMIN['list_all'],
@@ -714,7 +711,7 @@ class Poll
             $menu_arr,
             $LANG25[19],
             plugin_geticon_polls()
-        );
+        );*/
 
         // writing the actual list
         $header_arr = array(      # display 'text' and use table field 'field'
@@ -734,6 +731,12 @@ class Poll
                 'text' => $LANG25[20],
                 'field' => 'vote_count',
                 'sort' => true,
+                'align' => 'center',
+            ),
+            array(
+                'text' => $LANG_POLLS['results'],
+                'field' => 'results',
+                'sort' => false,
                 'align' => 'center',
             ),
             array(
@@ -876,6 +879,12 @@ class Poll
             $retval = COM_createLink(
                 COM_numberFormat($fieldvalue),
                 $_CONF['site_admin_url'].'/plugins/polls/index.php?lv=x&amp;pid='.urlencode($A['pid'])
+            );
+            break;
+        case 'results':
+            $retval = COM_createLink(
+                '<i class="uk-icon-bar-chart"></i>',
+                $_CONF['site_admin_url'] . '/plugins/polls/index.php?results=x&pid=' . urlencode($A['pid'])
             );
             break;
         case 'delete':
@@ -1456,31 +1465,6 @@ class Poll
         global $_CONF, $_TABLES, $_IMAGE_TYPE, $LANG_ADMIN, $LANG_POLLS, $LANG25, $LANG_ACCESS;
 
         $retval = '';
-        $menu_arr = array (
-            array(
-                'url' => $_CONF['site_admin_url'] . '/plugins/polls/index.php',
-                'text' => $LANG_ADMIN['list_all'],
-            ),
-            array(
-                'url' => $_CONF['site_admin_url'] . '/plugins/polls/index.php?edit=x',
-                'text' => $LANG_ADMIN['create_new'],
-            ),
-            array(
-                'url' => $_CONF['site_admin_url'],
-                'text' => $LANG_ADMIN['admin_home']),
-        );
-
-        $retval .= COM_startBlock(
-            'Poll Votes for ' . $this->pid, '',
-            COM_getBlockTemplate('_admin_block', 'header')
-        );
-
-        $retval .= ADMIN_createMenu(
-            $menu_arr,
-            $LANG25[19],
-            plugin_geticon_polls()
-        );
-
         $header_arr = array(
             array(
                 'text' => $LANG_POLLS['username'],
@@ -1528,6 +1512,23 @@ class Poll
         return $retval;
     }
 
+
+    public function updateVoters($num = 1)
+    {
+        global $_TABLES;
+
+        $num = (int)$num;
+        DB_change(
+            $_TABLES['polltopics'],
+            'voters',
+            "voters + $num",
+            'pid',
+            DB_escapeString($this->pid),
+            '',
+            true
+        );
+        return $this;
+    }
 
 }
 

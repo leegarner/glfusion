@@ -86,35 +86,19 @@ function POLLS_saveVote_AJAX($pid, $aid)
 
     $retval = array('html' => '','statusMessage' => '');
 
-    if (POLLS_ipAlreadyVoted ($pid)) {
+    if (Polls\Voter::hasVoted($pid)) {
         $retval['statusMessage'] = 'You have already voted on this poll';
-        $retval['html'] = POLLS_pollResults($pid,400,'','',2);
+        $retval['html'] = Polls\Poll::getInstance($pid)->showResults(400,'','',2);
     } else {
         setcookie ('poll-'.$pid, implode('-',$aid), time() + $_PO_CONF['pollcookietime'],
                    $_CONF['cookie_path'], $_CONF['cookiedomain'],
                    $_CONF['cookiesecure']);
 
-        DB_change($_TABLES['polltopics'],'voters',"voters + 1",'pid',DB_escapeString($pid),'',true);
-
         $answers = count($aid);
         for ($i = 0; $i < $answers; $i++) {
-            DB_change(
-                $_TABLES['pollanswers'],
-                'votes',
-                "votes + 1",
-                array('pid', 'qid', 'aid'),
-                array(DB_escapeString($pid),  $i, COM_applyFilter($aid[$i], true)),
-                '',
-                true
-            );
+            Polls\Answer::increment($aid[$i]);
         }
         Polls\Voter::create($pid);
-        /*if ( COM_isAnonUser() ) {
-            $userid = 1;
-        } else {
-            $userid = $_USER['uid'];
-        }*/
-        //$sql = "INSERT INTO {$_TABLES['pollvoters']} (ipaddress,uid,date,pid) VALUES ('".DB_escapeString($_SERVER['REAL_ADDR'])."',".(int)$userid.",".time().",'".DB_escapeString($pid)."')";
         $result = DB_query($sql);
     }
 

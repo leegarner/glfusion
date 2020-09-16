@@ -298,6 +298,46 @@ class Answer
         return $this->remark;
     }
 
+
+    /**
+     * Increment the vote cound for an answer.
+     *
+     * @param   string  $pid    Poll ID
+     * @param   integer $qid    Question ID
+     * @param   integer $aid    Answer ID
+     */
+    public static function increment($pid, $qid, $aid)
+    {
+        global $_TABLES;
+
+        DB_change(
+            $_TABLES['pollanswers'],
+            'votes',
+            "votes + 1",
+            array('pid', 'qid', 'aid'),
+            array(DB_escapeString($pid),  (int)$qid, (int)$aid, true),
+            '',
+            true
+        );
+    }
+
+
+    /**
+     * Change the Poll ID for all items if it was saved with a new ID.
+     *
+     * @param   string  $old_pid    Original Poll ID
+     * @param   string  $new_pid    New Poll ID
+     */
+    public static function changePid($old_pid, $new_pid)
+    {
+        global $_TABLES;
+
+        DB_query("UPDATE {$_TABLES['pollquestions']}
+            SET pid = '" . DB_escapeString($new_pid) . "'
+            WHERE pid = '" . DB_escapeString($old_pid) . "'"
+        );
+    }
+
 }
 
 ?>
