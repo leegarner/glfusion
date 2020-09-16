@@ -1111,18 +1111,9 @@ class Poll
             );
         }
 
-        if ( COM_isAnonUser() ) {
-            $userid = 1;
-        } else {
-            $userid = $_USER['uid'];
-        }
-        // This always does an insert so no need to provide key_field and key_value args
-        $sql = "INSERT INTO {$_TABLES['pollvoters']} SET
-            ipaddress = '" . DB_escapeString($_SERVER['REAL_ADDR']) . "',
-            uid = " . (int)$userid . ",
-            date = UNIX_TIMESTAMP(),
-            pid = '{$db_pid}'";
-        $result = DB_query($sql);
+        // Record that this user has voted
+        Voter::create($this->pid);
+
         $eMsg = $LANG_POLLS['savedvotemsg'] . ' "' . $this->getTopic() . '"';
             //. DB_getItem ($_TABLES['polltopics'], 'topic', "pid = '". $db_pid . "'").'"';
         COM_setMsg($eMsg);
@@ -1138,57 +1129,7 @@ class Poll
      */
     public function alreadyVoted()
     {
-        global $_USER, $_TABLES;
-
-        if (!COM_isAnonUser()) {
-            $pid = DB_escapeString($this->pid);
-            if (DB_count(
-                $_TABLES['pollvoters'],
-                 array('uid', 'pid'),
-                 array((int)$_USER['uid'], $pid) ) > 0
-            ) {
-                $retval = true;
-            } else {
-                $retval = false;
-            }
-        } elseif (
-            isset($_COOKIE['poll-' . $this->pid])
-            ||
-            $this->ipAlreadyVoted()
-        ) {
-            $retval = false;
-        } else {
-            $retval = true;
-        }
-        return $retval;
-    }
-
-
-    /**
-     * Check if we already have a vote from this IP address.
-     *
-     * @return   boolean         true: IP already voted; false: didn't
-     */
-    public function ipAlreadyVoted()
-    {
-        global $_TABLES;
-
-        $retval = false;
-
-        $ip = $_SERVER['REAL_ADDR'];
-        $pid = DB_escapeString($this->pid);
-
-        if (
-            $ip != '' &&
-            DB_count(
-                $_TABLES['pollvoters'],
-                array('ipaddress', 'pid'),
-                array(DB_escapeString($ip), $pid)
-            ) > 0
-        ) {
-            $retval = true;
-        }
-        return $retval;
+        return Voter::hasVoted($this->pid);
     }
 
 

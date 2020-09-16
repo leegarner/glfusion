@@ -621,7 +621,7 @@ function plugin_displaycomment_polls($id, $cid, $title, $order, $format, $page, 
             $aid = -1; // poll closed - show result
         }
         $Poll = Polls\Poll::getInstance($pid);
-        if (!isset ($_COOKIE['poll-'.$pid]) && !$Poll->ipAlreadyVoted() && $aid != -1 ) {
+        if (!isset ($_COOKIE['poll-'.$pid]) && !$Poll->alreadyVoted() && $aid != -1 ) {
             //$retval .= POLLS_pollVote($pid);
             $retval .= $Poll->Render();
         } else {
@@ -632,6 +632,7 @@ function plugin_displaycomment_polls($id, $cid, $title, $order, $format, $page, 
     }
     return $retval;
 }
+
 
 /**
 * Set template variables
@@ -944,7 +945,7 @@ function plugin_getiteminfo_polls($id, $what, $uid = 0, $options = array())
                     } else {
                         $pollEdit = SEC_hasRights('polls.edit');
                         // Users who have already voted but cannot see the results cannot view link
-                        if ($pollEdit || (!$pollEdit && !($A['hideresults'] == 1 && (isset($_COOKIE['poll-' . $A['pid']]) || POLLS_ipAlreadyVoted($A['pid']))))) {
+                        if ($pollEdit || (!$pollEdit && !($A['hideresults'] == 1 && (isset($_COOKIE['poll-' . $A['pid']]) || Polls\Voter::hasVoted($A['pid']))))) {
                             $props['url'] = $_CONF['site_url'] . '/polls/index.php?pid=' . $A['pid'];
                         }
                     }
