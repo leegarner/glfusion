@@ -1180,7 +1180,6 @@ class Poll
             $retval = true;
         }
         return $retval;
->>>>>>> 539c54cdc6735f269e9571fbe363033455abb58f
     }
 
 
