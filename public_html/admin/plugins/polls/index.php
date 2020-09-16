@@ -53,7 +53,7 @@ if (!SEC_hasRights ('polls.edit')) {
 // MAIN ========================================================================
 
 $action = '';
-$expected = array('edit','save','delete','lv','delvote');
+$expected = array('edit','save','delete','lv','delvote','results');
 foreach($expected as $provided) {
     if (isset($_POST[$provided])) {
         $action = $provided;
@@ -99,6 +99,7 @@ switch ($action) {
 
     case 'lv' :
         $title = $LANG25[5];
+        $page .= Polls\Menu::Admin($action);
         $page .= Polls\Poll::getInstance($pid)->listVotes();
         break;
 
@@ -154,10 +155,17 @@ switch ($action) {
         }
         break;
 
+    case 'results':
+        $page .= Polls\Menu::Admin($action);
+        $page .= Polls\Poll::getInstance($pid)->showResults();
+        break;
+
+    case 'listall':
     default:
         $title = $LANG25[18];
         $page .= ($msg > 0) ? COM_showMessage ($msg, 'polls') : '';
-        $page = Polls\Poll::adminList();
+        $page .= Polls\Menu::Admin('listall');
+        $page .= Polls\Poll::adminList();
         //$page .= POLLS_list();
         break;
 }
