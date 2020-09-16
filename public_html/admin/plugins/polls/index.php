@@ -45,14 +45,8 @@ USES_lib_admin();
 $display = '';
 
 if (!SEC_hasRights ('polls.edit')) {
-    $display .= COM_siteHeader ('menu', $MESSAGE[30]);
-    $display .= COM_startBlock ($MESSAGE[30], '',
-                                COM_getBlockTemplate ('_msg_block', 'header'));
-    $display .= $MESSAGE[36];
-    $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-    $display .= COM_siteFooter ();
     COM_accessLog ("User {$_USER['username']} tried to access the poll administration screen.");
-    echo $display;
+    COM_404();
     exit;
 }
 
