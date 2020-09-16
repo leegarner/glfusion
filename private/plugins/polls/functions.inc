@@ -504,7 +504,7 @@ function plugin_user_delete_polls($uid)
     global $_TABLES, $_PO_CONF;
 
     // Anonymize pollvoters by uid / ipaddress
-
+    Polls\Voter::anonymize($uid);
     DB_query("UPDATE {$_TABLES['pollvoters']} SET uid=1, ipaddress='' WHERE uid=".(int) $uid);
 
     if (DB_count ($_TABLES['polltopics'], 'owner_id', intval($uid)) == 0) {
@@ -515,25 +515,25 @@ function plugin_user_delete_polls($uid)
     if ($_PO_CONF['delete_polls'] == 1) {
         // delete the polls
         $result = DB_query ("SELECT pid FROM {$_TABLES['polltopics']} WHERE owner_id=".intval($uid));
-        $numPolls = DB_numRows ($result);
-        for ($i = 0; $i < $numPolls; $i++) {
-            list($pid) = DB_fetchArray ($result);
-            DB_delete ($_TABLES['pollanswers'], 'pid', $pid);
-            DB_delete ($_TABLES['pollvoters'], 'pid', $pid);
-            DB_delete($_TABLES['comments'], array('sid', 'type'),
-                                            array(DB_escapeString($pid), 'polls'));
+        while ($A = DB_fetchArray($result, false)) {
+            Polls\Poll::deletePoll($pid);
         }
-        DB_delete ($_TABLES['polltopics'], 'owner_id', intval($uid));
     } else {
         // assign ownership to a user from the Root group
-        $rootgroup = DB_getItem ($_TABLES['groups'], 'grp_id',
-                                 "grp_name = 'Root'");
-        $result = DB_query ("SELECT DISTINCT ug_uid FROM {$_TABLES['group_assignments']} WHERE ug_main_grp_id = $rootgroup ORDER BY ug_uid LIMIT 1");
-        list($rootuser) = DB_fetchArray ($result);
-
-        DB_query ("UPDATE {$_TABLES['polltopics']} SET owner_id = $rootuser WHERE owner_id = ".intval($uid));
+        $rootgroup = DB_getItem(
+            $_TABLES['groups'],
+            'grp_id',
+            "grp_name = 'Root'"
+        );
+        $result = DB_query(
+            "SELECT DISTINCT ug_uid FROM {$_TABLES['group_assignments']}
+            WHERE ug_main_grp_id = $rootgroup ORDER BY ug_uid LIMIT 1"
+        );
+        list($rootuser) = DB_fetchArray($result, false);
+        Polls\Poll::getInstance($pid)->setOwner($rootuser)->Save();
     }
 }
+
 
 /**
 * Return the current version of code.

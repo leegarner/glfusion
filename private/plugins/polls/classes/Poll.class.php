@@ -209,6 +209,19 @@ class Poll
 
 
     /**
+     * Set the owner ID.
+     *
+     * @param   integer $uid    User ID of poll owner
+     * @return  object  $this
+     */
+    public function setOwner($uid)
+    {
+        $this->owner_id = (int)$uid;
+        return $this;
+    }
+
+
+    /**
      * Check if this is a new record.
      *
      * @return  integer     1 if new, 0 if not
@@ -1397,29 +1410,38 @@ class Poll
     }
 
     /**
-     * Delete a poll
+     * Delete a poll.
      *
-     * @param    string  $pid    ID of poll to delete
-     * @return   string          HTML redirect
-     *
+     * @param   string  $pid    ID of poll to delete
+     * @param   boolean $force  True to disregard access, e.g. user is deleted
+     * @return  string          HTML redirect
      */
-    public static function deletePoll($pid)
+    public static function deletePoll($pid, $force=false)
     {
         global $_CONF, $_TABLES, $_USER;
 
         $Poll = self::getInstance($pid);
-        if (!$Poll->isNew() && $Poll->hasAccess()== 3) {
+        if (
+            !$Poll->isNew() &&
+            ($force || $Poll->hasAccess()== 3)
+        ) {
+            $pid = DB_escapeString($pid);
             DB_delete($_TABLES['polltopics'], 'pid', $pid);
             DB_delete($_TABLES['pollanswers'], 'pid', $pid);
             DB_delete($_TABLES['pollquestions'], 'pid', $pid);
             DB_delete($_TABLES['pollvoters'], 'pid', $pid);
             DB_delete($_TABLES['comments'], array('sid', 'type'), array($pid,  'polls'));
             PLG_itemDeleted($pid, 'polls');
-            return COM_refresh ($_CONF['site_admin_url'] . '/plugins/polls/index.php?msg=20');
+            if (!$force) {
+                // Don't redirect if this is done as part of user account deletion
+                COM_refresh ($_CONF['site_admin_url'] . '/plugins/polls/index.php?msg=20');
+            }
         } else {
-            COM_accessLog ("User {$_USER['username']} tried to illegally delete poll $pid.");
-            // apparently not an administrator, return ot the public-facing page
-            return COM_refresh($_CONF['site_url'] . '/polls/index.php');
+            if (!$force) {
+                COM_accessLog ("User {$_USER['username']} tried to illegally delete poll $pid.");
+                // apparently not an administrator, return ot the public-facing page
+                COM_refresh($_CONF['site_url'] . '/polls/index.php');
+            }
         }
     }
 
