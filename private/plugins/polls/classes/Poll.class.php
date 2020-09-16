@@ -1156,6 +1156,35 @@ class Poll
 
 
     /**
+     * Check if we already have a vote from this IP address.
+     *
+     * @return   boolean         true: IP already voted; false: didn't
+     */
+    public function ipAlreadyVoted()
+    {
+        global $_TABLES;
+
+        $retval = false;
+
+        $ip = $_SERVER['REAL_ADDR'];
+        $pid = DB_escapeString($this->pid);
+
+        if (
+            $ip != '' &&
+            DB_count(
+                $_TABLES['pollvoters'],
+                array('ipaddress', 'pid'),
+                array(DB_escapeString($ip), $pid)
+            ) > 0
+        ) {
+            $retval = true;
+        }
+        return $retval;
+>>>>>>> 539c54cdc6735f269e9571fbe363033455abb58f
+    }
+
+
+    /**
      * Shows all polls in system.
      * List all the polls on the system if no $pid is provided.
      *
