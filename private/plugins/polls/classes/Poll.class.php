@@ -1140,6 +1140,8 @@ class Poll
     {
         global $_USER, $_TABLES;
 
+        // If logged in and the user ID is in the voters table,
+        // we can trust that this user has voted.
         if (!COM_isAnonUser()) {
             $pid = DB_escapeString($this->pid);
             if (DB_count(
@@ -1147,20 +1149,19 @@ class Poll
                  array('uid', 'pid'),
                  array((int)$_USER['uid'], $pid) ) > 0
             ) {
-                $retval = true;
-            } else {
-                $retval = false;
+                return true;
             }
-        } elseif (
+        }
+
+        // For Anonymous we only have the cookie and IP address.
+        if (
             isset($_COOKIE['poll-' . $this->pid])
             ||
             $this->ipAlreadyVoted()
         ) {
-            $retval = false;
-        } else {
-            $retval = true;
+            return true;
         }
-        return $retval;
+        return false;
     }
 
 
